@@ -1,0 +1,175 @@
+<?php
+
+namespace App\Http\Controllers\Api\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Role;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UsersExport;
+use App\Imports\UsersImport;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+class UserController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = User::with('role');
+        
+        // Filter by role if provided
+        if ($request->has('role')) {
+            $role = $request->role;
+            $query->whereHas('role', function($q) use ($role) {
+                $q->where('name', $role);
+            });
+        }
+
+        $users = $query->latest()->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6',
+            'role_id' => 'required|exists:roles,id',
+            'nis' => 'nullable|string|unique:users',
+            'nip' => 'nullable|string|unique:users',
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
+            'is_active' => 'boolean'
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+        
+        $user = User::create($validated);
+        $user->load('role');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengguna berhasil ditambahkan',
+            'data' => $user
+        ], 201);
+    }
+
+    public function show(User $user)
+    {
+        $user->load('role');
+        return response()->json([
+            'success' => true,
+            'data' => $user
+        ]);
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'role_id' => 'required|exists:roles,id',
+            'nis' => 'nullable|string|unique:users,nis,' . $user->id,
+            'nip' => 'nullable|string|unique:users,nip,' . $user->id,
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
+            'is_active' => 'boolean'
+        ];
+
+        if ($request->filled('password')) {
+            $rules['password'] = 'string|min:6';
+        }
+
+        $validated = $request->validate($rules);
+
+        if ($request->filled('password')) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+        $user->load('role');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengguna berhasil diperbarui',
+            'data' => $user
+        ]);
+    }
+
+    public function destroy(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat menghapus akun sendiri'
+            ], 403);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengguna berhasil dihapus'
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $role = $request->role;
+        $format = $request->format ?? 'excel';
+
+        if ($format === 'pdf') {
+            $query = User::with('role');
+            if ($role) {
+                $query->whereHas('role', function($q) use ($role) {
+                    $q->where('name', $role);
+                });
+            }
+            $users = $query->get();
+            
+            // Set options for better local compatibility
+            $pdf = Pdf::loadView('admin.users.pdf', compact('users', 'role'))
+                ->setPaper('a4', 'landscape')
+                ->setOption(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
+                
+            return $pdf->download(($role ?: 'users') . "_export_" . date('Y-m-d') . ".pdf");
+        }
+
+        return Excel::download(new UsersExport($role), ($role ?: 'users') . "_export_" . date('Y-m-d') . ".xlsx");
+    }
+
+    public function template(Request $request)
+    {
+        $role = $request->role ?: 'siswa';
+        return Excel::download(new \App\Exports\UsersTemplateExport($role), "template_import_{$role}.xlsx");
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file',
+            'role' => 'required|string'
+        ]);
+
+        try {
+            Excel::import(new UsersImport($request->role), $request->file('file'));
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil diimpor'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengimpor data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}
