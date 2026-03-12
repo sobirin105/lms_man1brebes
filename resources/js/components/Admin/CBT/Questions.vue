@@ -1,33 +1,48 @@
 <template>
-    <v-dialog :model-value="modelValue" fullscreen transition="dialog-bottom-transition">
-        <v-card>
-            <v-toolbar color="primary">
+    <v-dialog :model-value="modelValue" fullscreen transition="dialog-bottom-transition" persistent>
+        <v-card color="grey-lighten-4">
+            <v-toolbar color="primary" elevation="4">
                 <v-btn icon @click="$emit('close')">
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
-                <v-toolbar-title>Kelola Soal: {{ quiz.title }}</v-toolbar-title>
+                <v-toolbar-title class="font-weight-bold">Kelola Soal: {{ quiz.title }}</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn variant="text" @click="$emit('close')">
+                    <v-btn variant="text" @click="$emit('close')" prepend-icon="mdi-check">
                         Selesai
                     </v-btn>
                 </v-toolbar-items>
             </v-toolbar>
 
-            <v-container>
+            <v-container fluid class="pa-4">
                 <v-row>
-                    <!-- Form Tambah/Edit Soal -->
+                    <!-- Form Tambah/Edit Soal (Sticky on desktop) -->
                     <v-col cols="12" md="4">
-                        <v-card class="mb-4">
-                            <v-card-title>{{ isEditing ? 'Edit Soal' : 'Tambah Soal Baru' }}</v-card-title>
-                            <v-card-text>
+                        <v-card class="mb-4 sticky-form" elevation="3" border>
+                            <v-card-title class="bg-primary-lighten-5 py-3 d-flex align-center">
+                                <v-icon start :color="isEditing ? 'warning' : 'primary'">
+                                    {{ isEditing ? 'mdi-pencil-box' : 'mdi-plus-box' }}
+                                </v-icon>
+                                <span class="font-weight-black">{{ isEditing ? 'Edit Soal' : 'Tambah Soal Baru' }}</span>
+                                <v-spacer></v-spacer>
+                                <v-btn v-if="isEditing" icon size="x-small" variant="tonal" color="grey" @click="resetForm">
+                                    <v-icon>mdi-close</v-icon>
+                                </v-btn>
+                            </v-card-title>
+                            
+                            <v-divider></v-divider>
+
+                            <v-card-text class="pt-4">
                                 <v-form ref="form" @submit.prevent="saveQuestion">
                                     <v-textarea
                                         v-model="questionForm.question_text"
                                         label="Pertanyaan"
                                         variant="outlined"
-                                        rows="3"
+                                        rows="4"
+                                        persistent-placeholder
+                                        placeholder="Tuliskan pertanyaan di sini..."
                                         :rules="[v => !!v || 'Pertanyaan wajib diisi']"
+                                        class="mb-2"
                                     ></v-textarea>
 
                                     <!-- Pilih jumlah opsi -->
@@ -37,11 +52,14 @@
                                         label="Jumlah Pilihan Jawaban"
                                         variant="outlined"
                                         density="compact"
-                                        class="mb-2"
+                                        prepend-inner-icon="mdi-format-list-numbered"
                                         @update:model-value="onJumlahOpsiChange"
+                                        class="mb-2"
                                     ></v-select>
 
-                                    <!-- Opsi A (selalu tampil) -->
+                                    <v-divider class="mb-4"></v-divider>
+
+                                    <!-- Opsi A -->
                                     <v-text-field
                                         v-model="questionForm.option_a"
                                         label="Opsi A"
@@ -52,7 +70,7 @@
                                         :rules="[v => !!v || 'Wajib diisi']"
                                     ></v-text-field>
 
-                                    <!-- Opsi B (selalu tampil) -->
+                                    <!-- Opsi B -->
                                     <v-text-field
                                         v-model="questionForm.option_b"
                                         label="Opsi B"
@@ -63,7 +81,7 @@
                                         :rules="[v => !!v || 'Wajib diisi']"
                                     ></v-text-field>
 
-                                    <!-- Opsi C (tampil jika >= 3) -->
+                                    <!-- Opsi C -->
                                     <v-text-field
                                         v-if="jumlahOpsi >= 3"
                                         v-model="questionForm.option_c"
@@ -75,7 +93,7 @@
                                         :rules="jumlahOpsi >= 3 ? [v => !!v || 'Wajib diisi'] : []"
                                     ></v-text-field>
 
-                                    <!-- Opsi D (tampil jika >= 4) -->
+                                    <!-- Opsi D -->
                                     <v-text-field
                                         v-if="jumlahOpsi >= 4"
                                         v-model="questionForm.option_d"
@@ -87,7 +105,7 @@
                                         :rules="jumlahOpsi >= 4 ? [v => !!v || 'Wajib diisi'] : []"
                                     ></v-text-field>
 
-                                    <!-- Opsi E (tampil jika >= 5) -->
+                                    <!-- Opsi E -->
                                     <v-text-field
                                         v-if="jumlahOpsi >= 5"
                                         v-model="questionForm.option_e"
@@ -106,27 +124,32 @@
                                         variant="outlined"
                                         item-title="text"
                                         item-value="value"
-                                        class="mt-2"
+                                        class="mt-4"
+                                        prepend-inner-icon="mdi-check-circle"
                                         :rules="[v => !!v || 'Pilih kunci jawaban']"
                                     ></v-select>
 
                                     <v-btn
                                         type="submit"
-                                        color="primary"
+                                        :color="isEditing ? 'warning' : 'primary'"
                                         block
+                                        size="large"
+                                        class="mt-4 font-weight-bold"
                                         :loading="saving"
+                                        elevation="2"
                                     >
                                         {{ isEditing ? 'Update Soal' : 'Simpan Soal' }}
                                     </v-btn>
+                                    
                                     <v-btn
                                         v-if="isEditing"
-                                        color="grey"
-                                        variant="text"
+                                        color="grey-darken-1"
+                                        variant="outlined"
                                         block
-                                        class="mt-2"
+                                        class="mt-3"
                                         @click="resetForm"
                                     >
-                                        Batal Edit
+                                        Batal & Tambah Soal Baru
                                     </v-btn>
                                 </v-form>
                             </v-card-text>
@@ -135,8 +158,20 @@
 
                     <!-- Daftar Soal -->
                     <v-col cols="12" md="8">
-                        <div class="d-flex align-center justify-space-between mb-4">
-                            <h3 class="text-h6">Daftar Soal ({{ questions.length }})</h3>
+                        <div class="d-flex align-center justify-space-between mb-4 px-2">
+                            <h3 class="text-h6 font-weight-bold d-flex align-center">
+                                <v-icon start color="primary">mdi-format-list-bulleted</v-icon>
+                                Daftar Soal ({{ questions.length }})
+                            </h3>
+                            <v-btn 
+                                color="success" 
+                                prepend-icon="mdi-plus" 
+                                variant="elevated" 
+                                v-if="isEditing"
+                                @click="resetForm"
+                            >
+                                Tambah Soal Baru
+                            </v-btn>
                         </div>
 
                         <v-alert
@@ -144,85 +179,78 @@
                             type="info"
                             variant="tonal"
                             class="mb-4"
+                            border="start"
                         >
-                            Belum ada soal untuk ujian ini.
+                            Belum ada soal untuk ujian ini. Silakan gunakan form di samping untuk menambah soal.
                         </v-alert>
 
                         <v-card
                             v-for="(q, index) in questions"
                             :key="q.id"
-                            class="mb-4"
-                            variant="outlined"
+                            class="mb-4 question-card"
+                            elevation="2"
+                            :class="{ 'border-primary': editingId === q.id }"
                         >
-                            <!-- Judul soal -->
-                            <v-card-title class="pa-3 pb-0">
+                            <v-card-title class="pa-4 bg-white">
                                 <div class="d-flex align-start">
-                                    <span class="font-weight-bold text-subtitle-1 mr-2 flex-shrink-0">{{ index + 1 }}.</span>
-                                    <span class="text-subtitle-1" style="white-space: normal; word-break: break-word;">
+                                    <v-chip color="primary" variant="flat" size="small" class="mr-3 mt-1 font-weight-bold">
+                                        {{ index + 1 }}
+                                    </v-chip>
+                                    <span class="text-subtitle-1 font-weight-medium flex-grow-1" style="white-space: normal; line-height: 1.5;">
                                         {{ q.question_text }}
                                     </span>
                                 </div>
                             </v-card-title>
 
-                            <!-- Tombol aksi terpisah -->
-                            <div class="d-flex justify-end px-3 pb-2 pt-1 gap-2">
+                            <v-divider></v-divider>
+
+                            <v-card-text class="bg-white">
+                                <v-list density="compact" class="pa-0">
+                                    <v-list-item 
+                                        v-for="opt in getActiveOptions(q)" 
+                                        :key="opt.key"
+                                        :class="{'bg-success-lighten-5 rounded': q.correct_answer === opt.key}"
+                                        class="mb-1"
+                                    >
+                                        <template v-slot:prepend>
+                                            <v-icon 
+                                                :icon="q.correct_answer === opt.key ? 'mdi-check-circle' : `mdi-alpha-${opt.key}-circle`" 
+                                                :color="q.correct_answer === opt.key ? 'success' : 'grey-darken-1'"
+                                            ></v-icon>
+                                        </template>
+                                        <span :class="{'text-success font-weight-bold': q.correct_answer === opt.key}">
+                                            {{ opt.label }}. {{ opt.text }}
+                                        </span>
+                                    </v-list-item>
+                                </v-list>
+                            </v-card-text>
+
+                            <v-divider></v-divider>
+
+                            <v-card-actions class="pa-3 bg-grey-lighten-5">
+                                <v-spacer></v-spacer>
                                 <v-btn
                                     size="small"
-                                    variant="tonal"
+                                    variant="outlined"
                                     color="primary"
                                     prepend-icon="mdi-pencil"
                                     @click="editQuestion(q)"
+                                    :disabled="saving"
                                 >
                                     Edit
                                 </v-btn>
                                 <v-btn
                                     size="small"
-                                    variant="tonal"
+                                    variant="outlined"
                                     color="error"
                                     prepend-icon="mdi-delete"
                                     class="ml-2"
                                     @click="deleteQuestion(q)"
+                                    :disabled="saving"
                                 >
                                     Hapus
                                 </v-btn>
-                            </div>
-
-                            <v-divider class="mx-3"></v-divider>
-
-                            <v-card-text>
-                                <v-list density="compact">
-                                    <v-list-item v-if="q.option_a" :class="{'text-success font-weight-bold': q.correct_answer === 'a'}">
-                                        <template v-slot:prepend>
-                                            <v-icon :icon="q.correct_answer === 'a' ? 'mdi-check-circle' : 'mdi-alpha-a-circle'" :color="q.correct_answer === 'a' ? 'success' : ''"></v-icon>
-                                        </template>
-                                        A. {{ q.option_a }}
-                                    </v-list-item>
-                                    <v-list-item v-if="q.option_b" :class="{'text-success font-weight-bold': q.correct_answer === 'b'}">
-                                        <template v-slot:prepend>
-                                            <v-icon :icon="q.correct_answer === 'b' ? 'mdi-check-circle' : 'mdi-alpha-b-circle'" :color="q.correct_answer === 'b' ? 'success' : ''"></v-icon>
-                                        </template>
-                                        B. {{ q.option_b }}
-                                    </v-list-item>
-                                    <v-list-item v-if="q.option_c" :class="{'text-success font-weight-bold': q.correct_answer === 'c'}">
-                                        <template v-slot:prepend>
-                                            <v-icon :icon="q.correct_answer === 'c' ? 'mdi-check-circle' : 'mdi-alpha-c-circle'" :color="q.correct_answer === 'c' ? 'success' : ''"></v-icon>
-                                        </template>
-                                        C. {{ q.option_c }}
-                                    </v-list-item>
-                                    <v-list-item v-if="q.option_d" :class="{'text-success font-weight-bold': q.correct_answer === 'd'}">
-                                        <template v-slot:prepend>
-                                            <v-icon :icon="q.correct_answer === 'd' ? 'mdi-check-circle' : 'mdi-alpha-d-circle'" :color="q.correct_answer === 'd' ? 'success' : ''"></v-icon>
-                                        </template>
-                                        D. {{ q.option_d }}
-                                    </v-list-item>
-                                    <v-list-item v-if="q.option_e" :class="{'text-success font-weight-bold': q.correct_answer === 'e'}">
-                                        <template v-slot:prepend>
-                                            <v-icon :icon="q.correct_answer === 'e' ? 'mdi-check-circle' : 'mdi-alpha-e-circle'" :color="q.correct_answer === 'e' ? 'success' : ''"></v-icon>
-                                        </template>
-                                        E. {{ q.option_e }}
-                                    </v-list-item>
-                                </v-list>
-                            </v-card-text>
+                            </v-card-actions>
                         </v-card>
                     </v-col>
                 </v-row>
@@ -255,7 +283,6 @@ const isEditing = ref(false);
 const editingId = ref(null);
 const form = ref(null);
 
-// Jumlah opsi yang dipilih (default 4 = A-D)
 const jumlahOpsi = ref(4);
 const pilihanJumlahOpsi = [
     { title: '2 Pilihan (A - B)', value: 2 },
@@ -264,7 +291,6 @@ const pilihanJumlahOpsi = [
     { title: '5 Pilihan (A - E)', value: 5 },
 ];
 
-// Kunci jawaban yang tersedia (menyesuaikan jumlah opsi)
 const kunciJawabanOptions = computed(() => {
     const semua = [
         { text: 'A', value: 'a' },
@@ -276,7 +302,16 @@ const kunciJawabanOptions = computed(() => {
     return semua.slice(0, jumlahOpsi.value);
 });
 
-// Reset field opsi yang tidak aktif & kunci jawaban jika tidak valid
+const getActiveOptions = (q) => {
+    const opts = [];
+    if (q.option_a) opts.push({ key: 'a', label: 'A', text: q.option_a });
+    if (q.option_b) opts.push({ key: 'b', label: 'B', text: q.option_b });
+    if (q.option_c) opts.push({ key: 'c', label: 'C', text: q.option_c });
+    if (q.option_d) opts.push({ key: 'd', label: 'D', text: q.option_d });
+    if (q.option_e) opts.push({ key: 'e', label: 'E', text: q.option_e });
+    return opts;
+};
+
 const onJumlahOpsiChange = (val) => {
     if (val < 5) questionForm.value.option_e = '';
     if (val < 4) questionForm.value.option_d = '';
@@ -286,7 +321,6 @@ const onJumlahOpsiChange = (val) => {
     if (!aktifKeys.includes(questionForm.value.correct_answer)) {
         questionForm.value.correct_answer = null;
     }
-    // Reset validasi agar error field yang hilang ikut bersih
     if (form.value) form.value.resetValidation();
 };
 
@@ -301,13 +335,13 @@ const questionForm = ref({
 });
 
 const loadQuestions = async () => {
-    if (!props.quiz) return;
+    if (!props.quiz?.id) return;
     loading.value = true;
     try {
         const response = await axios.get(`/api/admin/quizzes/${props.quiz.id}/questions`);
         questions.value = response.data.data;
     } catch (error) {
-        showError('Gagal memuat soal');
+        showError('Gagal memuat soal', 'Silakan refresh halaman.');
     } finally {
         loading.value = false;
     }
@@ -319,28 +353,33 @@ const saveQuestion = async () => {
 
     saving.value = true;
     try {
-        // Kirim null untuk field yang tidak aktif
         const payload = {
             question_text: questionForm.value.question_text,
             option_a: questionForm.value.option_a,
             option_b: questionForm.value.option_b,
-            option_c: jumlahOpsi.value >= 3 ? questionForm.value.option_c : null,
-            option_d: jumlahOpsi.value >= 4 ? questionForm.value.option_d : null,
-            option_e: jumlahOpsi.value >= 5 ? questionForm.value.option_e : null,
+            option_c: jumlahOpsi.value >= 3 ? (questionForm.value.option_c || null) : null,
+            option_d: jumlahOpsi.value >= 4 ? (questionForm.value.option_d || null) : null,
+            option_e: jumlahOpsi.value >= 5 ? (questionForm.value.option_e || null) : null,
             correct_answer: questionForm.value.correct_answer,
         };
 
-        if (isEditing.value) {
-            await axios.put(`/api/admin/quizzes/${props.quiz.id}/questions/${editingId.value}`, payload);
-            showSuccess('Soal berhasil diperbarui');
+        let response;
+        if (isEditing.value && editingId.value) {
+            response = await axios.put(`/api/admin/quizzes/${props.quiz.id}/questions/${editingId.value}`, payload);
+            showSuccess('Berhasil!', 'Soal berhasil diperbarui.');
         } else {
-            await axios.post(`/api/admin/quizzes/${props.quiz.id}/questions`, payload);
-            showSuccess('Soal berhasil ditambahkan');
+            response = await axios.post(`/api/admin/quizzes/${props.quiz.id}/questions`, payload);
+            showSuccess('Berhasil!', 'Soal baru berhasil ditambahkan.');
         }
+
+        // Segera refresh list dari server
         await loadQuestions();
+        
+        // Reset form ke mode "Tambah"
         resetForm();
     } catch (error) {
-        showError('Gagal menyimpan soal');
+        console.error('Error saving question:', error);
+        showError('Gagal menyimpan soal', error.response?.data?.message || 'Terjadi kesalahan sistem.');
     } finally {
         saving.value = false;
     }
@@ -358,11 +397,15 @@ const editQuestion = (question) => {
         option_e: question.option_e || '',
         correct_answer: question.correct_answer || null,
     };
-    // Deteksi jumlah opsi dari data soal yang ada
+    
+    // Auto-detect jumlah opsi
     if (question.option_e) jumlahOpsi.value = 5;
     else if (question.option_d) jumlahOpsi.value = 4;
     else if (question.option_c) jumlahOpsi.value = 3;
     else jumlahOpsi.value = 2;
+
+    // Scroll form ke atas agar terlihat (terutama di mobile)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const deleteQuestion = async (question) => {
@@ -371,10 +414,15 @@ const deleteQuestion = async (question) => {
         try {
             await axios.delete(`/api/admin/quizzes/${props.quiz.id}/questions/${question.id}`);
             await loadQuestions();
-            showSuccess('Soal berhasil dihapus');
+            showSuccess('Terhapus!', 'Soal berhasil dihapus.');
+            
+            // Jika sedang mengedit soal yang dihapus, reset form
+            if (editingId.value === question.id) {
+                resetForm();
+            }
         } catch (error) {
             if (error.response && error.response.status === 404) {
-                showError('Soal tidak ditemukan', 'Data mungkin sudah dihapus sebelumnya.');
+                showError('Soal tidak ditemukan', 'Mungkin sudah dihapus sebelumnya.');
                 loadQuestions();
             } else {
                 showError('Gagal menghapus soal');
@@ -406,3 +454,28 @@ watch(() => props.modelValue, (val) => {
     }
 });
 </script>
+
+<style scoped>
+@media (min-width: 960px) {
+    .sticky-form {
+        position: sticky;
+        top: 20px;
+    }
+}
+.border-primary {
+    border: 2px solid #1976D2 !important;
+}
+.bg-primary-lighten-5 {
+    background-color: #E3F2FD;
+}
+.bg-success-lighten-5 {
+    background-color: #E8F5E9;
+}
+.question-card {
+    transition: all 0.2s ease-in-out;
+}
+.question-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+</style>
