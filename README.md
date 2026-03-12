@@ -1,67 +1,170 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏫 LMS MAN 1 Brebes
+### Learning Management System — Madrasah Aliyah Negeri 1 Brebes
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi **Learning Management System (LMS)** berbasis web yang dirancang khusus untuk mendukung kegiatan belajar mengajar di MAN 1 Brebes. Aplikasi ini memudahkan Admin, Guru, dan Siswa dalam mengelola materi pembelajaran, tugas, kuis/ujian (CBT), nilai, presensi, dan pengumuman secara digital.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Role | Fitur |
+|------|-------|
+| **Admin** | Manajemen pengguna, kelas, mata pelajaran, pengumuman, jadwal, dan pengaturan aplikasi |
+| **Guru** | Upload materi, buat tugas & kuis (CBT), input nilai, kelola presensi, lihat jadwal mengajar |
+| **Siswa** | Akses materi, kumpul tugas, ikuti kuis (CBT), lihat nilai & presensi, lihat jadwal pelajaran |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🛠️ Teknologi yang Digunakan
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Backend
+- **PHP 8.2+**
+- **Laravel 11** — Framework PHP utama
+- **Laravel Sanctum** — Autentikasi berbasis token (API)
+- **Laravel DomPDF** — Generate laporan PDF
+- **Maatwebsite Excel** — Export data ke file Excel
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Frontend
+- **Vue.js 3** — Framework JavaScript reaktif
+- **Vuetify 3** — Komponen UI Material Design
+- **Vue Router 4** — Navigasi SPA (Single Page Application)
+- **Vite** — Build tool & dev server
+- **Tailwind CSS 3** — Utility-first CSS framework
+- **SweetAlert2** — Notifikasi & dialog interaktif
+- **Axios** — HTTP client untuk request API
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Database
+- **MySQL** — Database utama
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 📦 Aplikasi yang Dibutuhkan
 
-### Premium Partners
+Pastikan semua aplikasi berikut sudah terinstal di komputer Anda sebelum menjalankan program:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+| Aplikasi | Versi Minimal | Keterangan |
+|----------|--------------|------------|
+| **PHP** | 8.2+ | Runtime backend |
+| **Composer** | 2.x | Package manager PHP |
+| **Node.js** | 18+ | Runtime JavaScript |
+| **NPM** | 9+ | Package manager JavaScript (bawaan Node.js) |
+| **MySQL** | 8.0+ | Database server |
+| **Git** | 2.x | Version control |
+| **Laragon / XAMPP / WAMP** | Terbaru | (Opsional) Web server lokal untuk kemudahan instalasi |
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## ⚙️ Cara Menjalankan Program
 
-## Code of Conduct
+### 1. Clone Repository
+```bash
+git clone https://github.com/sobirin105/lms_man1brebes.git
+cd lms_man1brebes
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 2. Install Dependency PHP
+```bash
+composer install
+```
 
-## Security Vulnerabilities
+### 3. Install Dependency JavaScript
+```bash
+npm install
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Konfigurasi Environment
+```bash
+# Salin file .env contoh
+cp .env.example .env
 
-## License
+# Generate application key
+php artisan key:generate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# lms_man1brebes
+Kemudian edit file `.env` dan sesuaikan konfigurasi database:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=lms_man1brebes
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 5. Siapkan Database
+```bash
+# Buat database baru di MySQL dengan nama: lms_man1brebes
+# Kemudian jalankan migrasi dan seeder
+
+php artisan migrate
+php artisan db:seed
+```
+
+### 6. Link Storage (untuk upload file)
+```bash
+php artisan storage:link
+```
+
+### 7. Jalankan Aplikasi
+
+**Menggunakan Laragon:** Cukup letakkan folder proyek di dalam `C:\laragon\www\` dan aktifkan Laragon, lalu akses melalui `http://lms_man1brebes.test`.
+
+**Menggunakan Terminal (Manual):**
+
+Buka **dua terminal** secara bersamaan:
+
+*Terminal 1 — Jalankan Backend Laravel:*
+```bash
+php artisan serve
+```
+
+*Terminal 2 — Jalankan Frontend Vite:*
+```bash
+npm run dev
+```
+
+Kemudian buka browser dan akses: **http://localhost:8000**
+
+---
+
+## 👤 Akun Default (Seeder)
+
+Setelah menjalankan `db:seed`, akun berikut tersedia untuk login:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@man1brebes.sch.id | password |
+| Guru | guru@man1brebes.sch.id | password |
+| Siswa | siswa@man1brebes.sch.id | password |
+
+---
+
+## 📂 Struktur Folder Penting
+
+```
+lms_man1brebes/
+├── app/
+│   ├── Http/Controllers/Api/   # Controller API backend
+│   └── Models/                 # Model database
+├── database/
+│   ├── migrations/             # Skema tabel database
+│   └── seeders/                # Data awal database
+├── resources/
+│   ├── js/
+│   │   ├── components/         # Komponen Vue (Admin, Guru, Siswa)
+│   │   └── router/             # Konfigurasi routing Vue
+│   └── css/                    # File styling
+├── routes/
+│   └── api.php                 # Definisi route API
+└── public/                     # Asset publik & entry point
+```
+
+---
+
+## 📄 Lisensi
+
+Proyek ini dikembangkan untuk keperluan internal **MAN 1 Brebes**. Hak cipta dilindungi.
+
+---
+
+<p align="center">Dikembangkan dengan ❤️ untuk MAN 1 Brebes</p>
