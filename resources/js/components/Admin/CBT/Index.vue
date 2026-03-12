@@ -279,7 +279,12 @@ const deleteItem = async (item) => {
             quizzes.value = quizzes.value.filter(q => q.id !== item.id);
             showSuccess('Ujian berhasil dihapus');
         } catch (error) {
-            showError('Gagal menghapus ujian');
+            if (error.response && error.response.status === 404) {
+                showError('Ujian tidak ditemukan', 'Data mungkin sudah dihapus sebelumnya.');
+                loadQuizzes();
+            } else {
+                showError('Gagal menghapus ujian');
+            }
         }
     }
 };

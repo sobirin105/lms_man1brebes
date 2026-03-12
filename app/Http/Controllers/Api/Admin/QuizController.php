@@ -98,11 +98,12 @@ class QuizController extends Controller
     {
         $validated = $request->validate([
             'question_text' => 'required|string',
-            'option_a' => 'required|string',
-            'option_b' => 'required|string',
-            'option_c' => 'required|string',
-            'option_d' => 'required|string',
-            'correct_answer' => 'required|in:a,b,c,d'
+            'option_a'      => 'required|string',
+            'option_b'      => 'required|string',
+            'option_c'      => 'nullable|string',
+            'option_d'      => 'nullable|string',
+            'option_e'      => 'nullable|string',
+            'correct_answer' => 'required|in:a,b,c,d,e'
         ]);
 
         $question = $quiz->questions()->create($validated);
@@ -118,11 +119,12 @@ class QuizController extends Controller
     {
         $validated = $request->validate([
             'question_text' => 'required|string',
-            'option_a' => 'required|string',
-            'option_b' => 'required|string',
-            'option_c' => 'required|string',
-            'option_d' => 'required|string',
-            'correct_answer' => 'required|in:a,b,c,d'
+            'option_a'      => 'required|string',
+            'option_b'      => 'required|string',
+            'option_c'      => 'nullable|string',
+            'option_d'      => 'nullable|string',
+            'option_e'      => 'nullable|string',
+            'correct_answer' => 'required|in:a,b,c,d,e'
         ]);
 
         $question->update($validated);
