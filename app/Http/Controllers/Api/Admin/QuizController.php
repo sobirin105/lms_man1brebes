@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\QuizQuestion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class QuizController extends Controller
 {
@@ -13,7 +15,11 @@ class QuizController extends Controller
 
     public function index()
     {
-        $quizzes = Quiz::with(['class', 'subject', 'teacher'])->latest()->get();
+        $quizzes = Quiz::with(['class', 'subject', 'teacher'])
+            ->withCount('questions')
+            ->withSum('questions as total_points', 'points')
+            ->latest()
+            ->get();
         return response()->json([
             'success' => true,
             'data' => $quizzes
@@ -41,6 +47,8 @@ class QuizController extends Controller
             'success' => true,
             'message' => 'Ujian berhasil dibuat',
             'data' => $quiz->load(['class', 'subject'])
+                ->loadCount('questions')
+                ->loadSum('questions as total_points', 'points')
         ], 201);
     }
 
@@ -72,6 +80,8 @@ class QuizController extends Controller
             'success' => true,
             'message' => 'Ujian berhasil diperbarui',
             'data' => $quiz->load(['class', 'subject'])
+                ->loadCount('questions')
+                ->loadSum('questions as total_points', 'points')
         ]);
     }
 
@@ -103,8 +113,20 @@ class QuizController extends Controller
             'option_c'      => 'nullable|string',
             'option_d'      => 'nullable|string',
             'option_e'      => 'nullable|string',
-            'correct_answer' => 'required|in:a,b,c,d,e'
+            'correct_answer' => 'required|in:a,b,c,d,e',
+            'points'        => 'required|integer|min:0',
+            'type'          => 'nullable|string|in:multiple_choice,essay,true_false',
+            'question_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
+
+        if ($request->hasFile('question_image')) {
+            $path = $request->file('question_image')->store('questions', 'public');
+            $validated['question_image'] = $path;
+        }
+
+        if (!isset($validated['type'])) {
+            $validated['type'] = 'multiple_choice';
+        }
 
         $question = $quiz->questions()->create($validated);
 
@@ -124,8 +146,20 @@ class QuizController extends Controller
             'option_c'      => 'nullable|string',
             'option_d'      => 'nullable|string',
             'option_e'      => 'nullable|string',
-            'correct_answer' => 'required|in:a,b,c,d,e'
+            'correct_answer' => 'required|in:a,b,c,d,e',
+            'points'        => 'required|integer|min:0',
+            'type'          => 'nullable|string|in:multiple_choice,essay,true_false',
+            'question_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
+
+        if ($request->hasFile('question_image')) {
+            // Hapus gambar lama jika ada
+            if ($question->question_image) {
+                Storage::disk('public')->delete($question->question_image);
+            }
+            $path = $request->file('question_image')->store('questions', 'public');
+            $validated['question_image'] = $path;
+        }
 
         $question->update($validated);
 
@@ -138,6 +172,9 @@ class QuizController extends Controller
 
     public function destroyQuestion(Quiz $quiz, QuizQuestion $question)
     {
+        if ($question->question_image) {
+            Storage::disk('public')->delete($question->question_image);
+        }
         $question->delete();
         return response()->json([
             'success' => true,

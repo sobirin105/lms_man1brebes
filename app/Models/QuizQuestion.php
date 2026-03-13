@@ -11,13 +11,17 @@ class QuizQuestion extends Model
 
     protected $fillable = [
         'quiz_id',
+        'type',
         'question_text',
+        'question_image',
         'option_a',
         'option_b',
         'option_c',
         'option_d',
         'option_e',
-        'correct_answer'
+        'correct_answer',
+        'points',
+        'order'
     ];
 
     public function quiz()

@@ -32,11 +32,35 @@
                     <v-chip
                         :color="item.is_active ? 'success' : 'grey'"
                         size="small"
+                        variant="flat"
                     >
                         {{ item.is_active ? 'Aktif' : 'Non-Aktif' }}
                     </v-chip>
                 </template>
+                <template v-slot:item.questions_count="{ item }">
+                    <v-chip size="small" variant="tonal" color="primary">
+                        {{ item.questions_count || 0 }} Soal
+                    </v-chip>
+                </template>
+                <template v-slot:item.total_points="{ item }">
+                    <v-chip size="small" variant="flat" color="orange-darken-3">
+                        {{ item.total_points || 0 }} Poin
+                    </v-chip>
+                </template>
+                <template v-slot:item.duration_minutes="{ item }">
+                    {{ item.duration_minutes }} mnt
+                </template>
                 <template v-slot:item.actions="{ item }">
+                    <v-btn
+                        icon
+                        size="small"
+                        color="success"
+                        class="mr-2"
+                        @click="openPreview(item)"
+                        title="Pratinjau Ujian"
+                    >
+                        <v-icon>mdi-eye</v-icon>
+                    </v-btn>
                     <v-btn
                         icon
                         size="small"
@@ -170,6 +194,14 @@
             @close="closeQuestions"
         ></question-manager>
 
+        <!-- Preview Drawer/Dialog -->
+        <preview-dialog
+            v-if="selectedPreviewQuiz"
+            v-model="previewDialog"
+            :quiz="selectedPreviewQuiz"
+            @close="closePreview"
+        ></preview-dialog>
+
     </v-container>
 </template>
 
@@ -178,6 +210,7 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useAlert } from '../../../composables/useAlert';
 import QuestionManager from './Questions.vue';
+import PreviewDialog from './Preview.vue';
 
 const { showSuccess, showError, showConfirm } = useAlert();
 
@@ -188,7 +221,9 @@ const loading = ref(false);
 const saving = ref(false);
 const dialog = ref(false);
 const questionsDialog = ref(false);
+const previewDialog = ref(false);
 const selectedQuiz = ref(null);
+const selectedPreviewQuiz = ref(null);
 const editedIndex = ref(-1);
 
 const editedItem = ref({
@@ -218,11 +253,11 @@ const headers = [
     { title: 'Judul Ujian', align: 'start', key: 'title' },
     { title: 'Kelas', key: 'class.name' },
     { title: 'Mata Pelajaran', key: 'subject.name' },
-    { title: 'Durasi', key: 'duration_minutes' },
-    { title: 'Waktu Mulai', key: 'start_time' },
-    { title: 'Waktu Selesai', key: 'end_time' },
-    { title: 'Status', key: 'is_active' },
-    { title: 'Aksi', key: 'actions', sortable: false },
+    { title: 'Soal', key: 'questions_count', align: 'center' },
+    { title: 'Skor', key: 'total_points', align: 'center' },
+    { title: 'Durasi', key: 'duration_minutes', align: 'center' },
+    { title: 'Status', key: 'is_active', align: 'center' },
+    { title: 'Aksi', key: 'actions', sortable: false, align: 'end' },
 ];
 
 const formTitle = computed(() => {
@@ -275,7 +310,7 @@ const deleteItem = async (item) => {
     const confirmed = await showConfirm('Apakah Anda yakin ingin menghapus ujian ini?');
     if (confirmed) {
         try {
-            await axios.delete(`/api/admin/quizzes/${item.id}`);
+            await axios.delete(`api/admin/quizzes/${item.id}`);
             quizzes.value = quizzes.value.filter(q => q.id !== item.id);
             showSuccess('Ujian berhasil dihapus');
         } catch (error) {
@@ -315,7 +350,7 @@ const save = async () => {
     try {
         saving.value = true;
         if (editedIndex.value > -1) {
-            const response = await axios.put(`/api/admin/quizzes/${editedItem.value.id}`, editedItem.value);
+            const response = await axios.put(`api/admin/quizzes/${editedItem.value.id}`, editedItem.value);
             Object.assign(quizzes.value[editedIndex.value], response.data.data);
             showSuccess('Ujian berhasil diperbarui');
         } else {
@@ -348,6 +383,16 @@ const manageQuestions = (item) => {
 const closeQuestions = () => {
     questionsDialog.value = false;
     selectedQuiz.value = null;
+};
+
+const openPreview = (item) => {
+    selectedPreviewQuiz.value = item;
+    previewDialog.value = true;
+};
+
+const closePreview = () => {
+    previewDialog.value = false;
+    selectedPreviewQuiz.value = null;
 };
 
 onMounted(() => {
